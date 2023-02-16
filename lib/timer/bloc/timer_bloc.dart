@@ -35,6 +35,22 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
 
   void _onTimerStarted(TimerStarted event, Emitter<TimerState> emit) {
     /// emit TimerRunInProgress state with the duration that event(TimerStarted) had
+    if (event.durationRaw != null) {
+      int additionalMinute = 0;
+      var splittedDurationRaw = [
+        int.parse(event.durationRaw!.substring(0, 2)),
+        int.parse(event.durationRaw!.substring(2, event.durationRaw!.length)),
+      ];
+      additionalMinute = (splittedDurationRaw.last / 60).truncate();
+      splittedDurationRaw.last %=  60;
+      splittedDurationRaw.first += additionalMinute;
+
+      event.duration = (splittedDurationRaw.first * 60 ) + splittedDurationRaw.last;
+
+      // print(additionalMinute);
+      // print(splittedDurationRaw.first);
+      // print(splittedDurationRaw.last);
+    }
     emit(TimerRunInProgress(event.duration));
 
     /// cancel the subscription stream if there is any
@@ -46,26 +62,27 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
         _ticker.tick(ticks: event.duration).listen((duration) => add(_TimerTicked(duration: duration)));
   }
 
-  void _onTimerResumed (TimerResumed event, Emitter<TimerState> emit) {
-    if(state is TimerRunPause) {
+  void _onTimerResumed(TimerResumed event, Emitter<TimerState> emit) {
+    if (state is TimerRunPause) {
       /// Resume the subscription
       _tickerSubscription?.resume();
       emit(TimerRunInProgress(state.duration));
     }
   }
 
-  void _onTimerReset (TimerReset event, Emitter<TimerState> emit) {
+  void _onTimerReset(TimerReset event, Emitter<TimerState> emit) {
     /// close/cancel the subscription because we don't need it anymore
     _tickerSubscription?.cancel();
+
     /// emit Initial state with the default duration
     emit(const TimerInitial(_duration));
   }
 
-  void _onTimerPaused (TimerPaused event, Emitter<TimerState> emit) {
-
-    if(state is TimerRunInProgress) {
+  void _onTimerPaused(TimerPaused event, Emitter<TimerState> emit) {
+    if (state is TimerRunInProgress) {
       /// Pause the stream tick method
       _tickerSubscription?.pause();
+
       /// emit/yield TimerRunPause state with the duration of state.duration coming from TimerRunInProgress state
       emit(TimerRunPause(state.duration));
     }

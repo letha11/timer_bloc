@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:timer_bloc_tut/timer/bloc/timer_bloc.dart';
+import 'package:timer_bloc_tut/timer/view/widgets/num_pad.dart';
 
 import '../../utils/ticker.dart';
+import '../cubit/timer_set_cubit.dart';
 import './widgets/timer_text.dart';
 import './widgets/background.dart';
 import './widgets/actions_button.dart';
@@ -12,8 +14,15 @@ class TimerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => TimerBloc(ticker: const Ticker()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<TimerBloc>(
+          create: (_) => TimerBloc(ticker: const Ticker()),
+        ),
+        BlocProvider<TimerSetCubit>(
+          create: (_) => TimerSetCubit(),
+        ),
+      ],
       child: const TimerView(),
     );
   }
@@ -36,9 +45,11 @@ class TimerView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: const [
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 100.0),
+                padding: EdgeInsets.only(bottom: 40.0),
                 child: Center(child: TimerText()),
               ),
+              NumPad(),
+              SizedBox(height: 30),
               ActionsButton(),
             ],
           ),
