@@ -116,6 +116,12 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     /// emit/yield TimerRunInProgress if the duration is still greater than 0
     /// if it has reached 0, it will emit/yield TimerRunComplete state
     // TODO: every TimerTicked event it will either send TimerRunInProgress state with the duration send in here, or TimerRunComplete.
-    emit(event.duration > 0 ? TimerRunInProgress(event.duration) : const TimerRunComplete());
+    if(event.duration > 0) {
+      emit(TimerRunInProgress(event.duration));
+    } else {
+      _temp = '';
+      emit(const TimerInitial(0));
+    }
+    emit(event.duration > 0 ? TimerRunInProgress(event.duration) : const TimerInitial(0));
   }
 }
