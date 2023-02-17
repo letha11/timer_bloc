@@ -11,7 +11,8 @@ part 'timer_state.dart';
 
 class TimerBloc extends Bloc<TimerEvent, TimerState> {
   /// set the default duration to 60 seconds == 1 minute
-  static const int _duration = 60;
+  // static int? _duration;
+  String _temp = '';
 
   final Ticker _ticker;
 
@@ -19,11 +20,12 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
 
   TimerBloc({required Ticker ticker})
       : _ticker = ticker,
-        super(const TimerInitial(_duration)) {
+        super(const TimerInitial(0)) {
     on<TimerStarted>(_onTimerStarted);
     on<TimerPaused>(_onTimerPaused);
     on<TimerResumed>(_onTimerResumed);
     on<TimerReset>(_onTimerReset);
+    on<TimerChanged>(_onTimerChanged);
     on<_TimerTicked>(_onTimerTicked);
   }
 
@@ -33,24 +35,34 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     return super.close();
   }
 
-  void _onTimerStarted(TimerStarted event, Emitter<TimerState> emit) {
-    /// emit TimerRunInProgress state with the duration that event(TimerStarted) had
-    if (event.durationRaw != null) {
+  void _onTimerChanged(TimerChanged event, Emitter<TimerState> emit) {
+    const defaultFormat = '0000';
+    int? finalDuration;
+
+    if (_temp.length < 4) {
+      _temp += event.val.toString();
+      String resultDuration = defaultFormat.replaceRange(defaultFormat.length - _temp.length, null, _temp);
+
+      /// 
       int additionalMinute = 0;
       var splittedDurationRaw = [
-        int.parse(event.durationRaw!.substring(0, 2)),
-        int.parse(event.durationRaw!.substring(2, event.durationRaw!.length)),
+        int.parse(resultDuration.substring(0, 2)),
+        int.parse(resultDuration.substring(2, resultDuration.length)),
       ];
       additionalMinute = (splittedDurationRaw.last / 60).truncate();
-      splittedDurationRaw.last %=  60;
+      splittedDurationRaw.last %= 60;
       splittedDurationRaw.first += additionalMinute;
 
-      event.duration = (splittedDurationRaw.first * 60 ) + splittedDurationRaw.last;
+      /// Convert minutes to second and add the second
+      finalDuration = (splittedDurationRaw.first * 60 ) + splittedDurationRaw.last;
 
-      // print(additionalMinute);
-      // print(splittedDurationRaw.first);
-      // print(splittedDurationRaw.last);
+      emit(TimerInitial(finalDuration ?? 0));
+    } else {
+      // do nothing
     }
+  }
+
+  void _onTimerStarted(TimerStarted event, Emitter<TimerState> emit) {
     emit(TimerRunInProgress(event.duration));
 
     /// cancel the subscription stream if there is any
@@ -58,8 +70,7 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
 
     /// set the _tickerSubscription to listen to the ticker.tick method
     /// and trigger a new event called _TimerTicked so the ui re-render everytime the timer tick.
-    _tickerSubscription =
-        _ticker.tick(ticks: event.duration).listen((duration) => add(_TimerTicked(duration: duration)));
+    _tickerSubscription = _ticker.tick(ticks: event.duration).listen((duration) => add(_TimerTicked(duration: duration)));
   }
 
   void _onTimerResumed(TimerResumed event, Emitter<TimerState> emit) {
@@ -71,11 +82,13 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
   }
 
   void _onTimerReset(TimerReset event, Emitter<TimerState> emit) {
+    _temp = '';
+
     /// close/cancel the subscription because we don't need it anymore
     _tickerSubscription?.cancel();
 
     /// emit Initial state with the default duration
-    emit(const TimerInitial(_duration));
+    emit(const TimerInitial(0));
   }
 
   void _onTimerPaused(TimerPaused event, Emitter<TimerState> emit) {
@@ -91,6 +104,7 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
   void _onTimerTicked(_TimerTicked event, Emitter<TimerState> emit) {
     /// emit/yield TimerRunInProgress if the duration is still greater than 0
     /// if it has reached 0, it will emit/yield TimerRunComplete state
+    // TODO: every TimerTicked event it will either send TimerRunInProgress state with the duration send in here, or TimerRunComplete.
     emit(event.duration > 0 ? TimerRunInProgress(event.duration) : const TimerRunComplete());
   }
 }

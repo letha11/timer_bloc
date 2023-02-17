@@ -4,7 +4,6 @@ import 'package:timer_bloc_tut/timer/bloc/timer_bloc.dart';
 import 'package:timer_bloc_tut/timer/view/widgets/num_pad.dart';
 
 import '../../utils/ticker.dart';
-import '../cubit/timer_set_cubit.dart';
 import './widgets/timer_text.dart';
 import './widgets/background.dart';
 import './widgets/actions_button.dart';
@@ -14,15 +13,8 @@ class TimerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<TimerBloc>(
-          create: (_) => TimerBloc(ticker: const Ticker()),
-        ),
-        BlocProvider<TimerSetCubit>(
-          create: (_) => TimerSetCubit(),
-        ),
-      ],
+    return BlocProvider(
+      create: (_) => TimerBloc(ticker: const Ticker()),
       child: const TimerView(),
     );
   }

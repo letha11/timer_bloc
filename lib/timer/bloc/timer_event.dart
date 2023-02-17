@@ -7,9 +7,14 @@ abstract class TimerEvent {
 
 /// Inform TimerBloc that timer has started
 class TimerStarted extends TimerEvent {
-  const TimerStarted({required this.duration, this.durationRaw});
+  const TimerStarted({required this.duration});
   final int duration;
-  final String? durationRaw;
+}
+
+class TimerChanged extends TimerEvent{
+  const TimerChanged(this.val);
+
+  final int val;
 }
 
 /// Inform TimerBloc that timer has been paused

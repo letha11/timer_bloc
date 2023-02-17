@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:timer_bloc_tut/timer/cubit/timer_set_cubit.dart';
+
+import '../../bloc/timer_bloc.dart';
 
 class NumPad extends StatelessWidget {
   const NumPad({Key? key}) : super(key: key);
@@ -19,7 +20,7 @@ class NumPad extends StatelessWidget {
               width: 80,
               height: 80,
               child: FloatingNumberButton(
-                onPressed: () => context.read<TimerSetCubit>().changeVal('${(i + 1) == 10 ? 0 : i + 1}'),
+                onPressed: () => context.read<TimerBloc>().add(TimerChanged((i + 1) == 10 ? 0 : i + 1)),
                 num: (i + 1) == 10 ? 0 : i + 1,
               ),
             ),
