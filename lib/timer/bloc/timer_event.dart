@@ -14,7 +14,7 @@ class TimerStarted extends TimerEvent {
 class TimerChanged extends TimerEvent{
   const TimerChanged(this.val);
 
-  final int val;
+  final int? val;
 }
 
 /// Inform TimerBloc that timer has been paused

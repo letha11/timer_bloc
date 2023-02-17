@@ -39,11 +39,19 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
     const defaultFormat = '0000';
     int? finalDuration;
 
-    if (_temp.length < 4) {
-      _temp += event.val.toString();
-      String resultDuration = defaultFormat.replaceRange(defaultFormat.length - _temp.length, null, _temp);
+    if(event.val == null && _temp.isNotEmpty) {
+      _temp = _temp.substring(0, _temp.length - 1);
+    }
 
-      /// 
+    if (_temp.length < 4) {
+      String resultDuration = '';
+
+      if(event.val != null) {
+        _temp += event.val.toString();
+      }
+
+      resultDuration = defaultFormat.replaceRange(defaultFormat.length - _temp.length, null, _temp);
+
       int additionalMinute = 0;
       var splittedDurationRaw = [
         int.parse(resultDuration.substring(0, 2)),
@@ -63,14 +71,17 @@ class TimerBloc extends Bloc<TimerEvent, TimerState> {
   }
 
   void _onTimerStarted(TimerStarted event, Emitter<TimerState> emit) {
-    emit(TimerRunInProgress(event.duration));
+    if(event.duration > 0) {
+      emit(TimerRunInProgress(event.duration));
 
-    /// cancel the subscription stream if there is any
-    _tickerSubscription?.cancel();
+      /// cancel the subscription stream if there is any
+      _tickerSubscription?.cancel();
 
-    /// set the _tickerSubscription to listen to the ticker.tick method
-    /// and trigger a new event called _TimerTicked so the ui re-render everytime the timer tick.
-    _tickerSubscription = _ticker.tick(ticks: event.duration).listen((duration) => add(_TimerTicked(duration: duration)));
+      /// set the _tickerSubscription to listen to the ticker.tick method
+      /// and trigger a new event called _TimerTicked so the ui re-render everytime the timer tick.
+      _tickerSubscription = _ticker.tick(ticks: event.duration).listen((duration) => add(_TimerTicked(duration: duration)));
+
+    }
   }
 
   void _onTimerResumed(TimerResumed event, Emitter<TimerState> emit) {

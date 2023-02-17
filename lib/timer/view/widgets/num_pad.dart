@@ -24,6 +24,14 @@ class NumPad extends StatelessWidget {
                 num: (i + 1) == 10 ? 0 : i + 1,
               ),
             ),
+          SizedBox(
+            width: 80,
+            height: 80,
+            child: FloatingActionButton(
+              child: const Icon(Icons.backspace),
+              onPressed: () => context.read<TimerBloc>().add(TimerChanged(null)),
+            ),
+          ),
         ],
       ),
     );
